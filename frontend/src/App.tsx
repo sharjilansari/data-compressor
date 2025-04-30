@@ -11,6 +11,9 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import theme from './theme';
+import ProtectedRoute from './components/ProtectedRoute';
+import CompressionAnalytics from './components/CompressionAnalytics';
+import './firebase'; // Fixed import path
 
 interface CompressionData {
   originalSize: number;
@@ -19,21 +22,6 @@ interface CompressionData {
   algorithm: string;
   timestamp: number;
 }
-
-// Protected Route component
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" />;
-  }
-
-  return <>{children}</>;
-};
 
 function App() {
   const [mode, setMode] = useState<'light' | 'dark'>('light');
@@ -62,8 +50,8 @@ function App() {
   return (
     <ThemeProvider theme={currentTheme}>
       <CssBaseline />
-      <Router>
-        <AuthProvider>
+      <AuthProvider>
+        <Router>
           <Navbar mode={mode} onToggleColorMode={toggleColorMode} />
           <Box 
             sx={{ 
@@ -169,11 +157,19 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/analytics"
+                  element={
+                    <ProtectedRoute>
+                      <CompressionAnalytics />
+                    </ProtectedRoute>
+                  }
+                />
               </Routes>
             </Box>
           </Box>
-        </AuthProvider>
-      </Router>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

@@ -16,7 +16,7 @@ import { motion } from 'framer-motion';
 import GoogleIcon from '@mui/icons-material/Google';
 
 const Login: React.FC = () => {
-  const { login, googleSignIn, error } = useAuth();
+  const { login, googleSignIn, error, user } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +28,7 @@ const Login: React.FC = () => {
       await login(email, password);
       navigate('/compress');
     } catch (error) {
-      // Error is handled by the AuthContext
+      // Handle error in UI (already managed by error state)
     }
   };
 
@@ -37,7 +37,7 @@ const Login: React.FC = () => {
       await googleSignIn();
       navigate('/compress');
     } catch (error) {
-      // Error is handled by the AuthContext
+      // Handle error in UI (already managed by error state)
     }
   };
 
@@ -113,11 +113,7 @@ const Login: React.FC = () => {
               Continue with Google
             </Button>
 
-            <Divider sx={{ width: '100%', mb: 3 }}>
-              <Typography variant="body2" color="text.secondary">
-                OR
-              </Typography>
-            </Divider>
+            <Divider sx={{ width: '100%', mb: 3 }} />
 
             <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
               <TextField
@@ -131,12 +127,7 @@ const Login: React.FC = () => {
                 autoFocus
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                sx={{ 
-                  mb: 2,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 0,
-                  },
-                }}
+                sx={{ mb: 2 }}
               />
               <TextField
                 margin="normal"
@@ -149,12 +140,7 @@ const Login: React.FC = () => {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                sx={{ 
-                  mb: 3,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 0,
-                  },
-                }}
+                sx={{ mb: 3 }}
               />
               <Button
                 type="submit"
@@ -196,4 +182,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login; 
+export default Login;

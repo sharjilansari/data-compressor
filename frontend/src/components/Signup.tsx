@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
 import {
   Box,
   Button,
@@ -8,51 +8,46 @@ import {
   TextField,
   Typography,
   Paper,
-  useTheme,
   Link,
-  Divider,
+  Alert
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import GoogleIcon from '@mui/icons-material/Google';
+import { signup, googleSignIn } from '../services/auth';
 
 const Signup: React.FC = () => {
-  const { signup, googleSignIn, error: authError } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const theme = useTheme();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+
     try {
-      setLoading(true);
-      setError('');
-      await signup(email, password, name);  // Ensure the signup function is called correctly
+      await signup(email, password, name);
       navigate('/compress');
-    } catch (error: any) {
-      console.error('Signup error:', error);
-      if (error.code === 'auth/email-already-in-use') {
-        setError('This email is already registered. Please sign in instead.');
-      } else {
-        setError(error.message || 'Failed to create account. Please try again.');
-      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignup = async () => {
+    setError('');
+    setLoading(true);
+
     try {
-      setLoading(true);
-      setError('');
-      await googleSignIn();  // Ensure the Google sign-in function is called correctly
+      await googleSignIn();
       navigate('/compress');
-    } catch (error: any) {
-      console.error('Google sign-in error:', error);
-      setError(error.message || 'Failed to sign in with Google. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -103,10 +98,10 @@ const Signup: React.FC = () => {
               Create Account
             </Typography>
             
-            {(error || authError) && (
-              <Typography color="error" sx={{ mb: 2 }}>
-                {error || authError}
-              </Typography>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
             )}
 
             <Button
@@ -130,13 +125,7 @@ const Signup: React.FC = () => {
               Continue with Google
             </Button>
 
-            <Divider sx={{ width: '100%', mb: 3 }}>
-              <Typography variant="body2" color="text.secondary">
-                OR
-              </Typography>
-            </Divider>
-
-            <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+            <form onSubmit={handleSubmit}>
               <TextField
                 margin="normal"
                 required
@@ -226,7 +215,7 @@ const Signup: React.FC = () => {
                   {"Already have an account? Sign In"}
                 </Link>
               </Box>
-            </Box>
+            </form>
           </Paper>
         </motion.div>
       </Container>

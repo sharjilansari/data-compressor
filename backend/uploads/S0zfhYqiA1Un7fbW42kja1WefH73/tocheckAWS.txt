@@ -1,0 +1,14 @@
+lambda timout
+lambda entry point
+lambda env variable
+s3 bucket pre-signed url
+rest api gateway api key
+create stage in api gateway
+monitor->view cloudwatch logs
+code -> env variables
+api key
+rate limiting
+lambda auto deployment using github actions
+ci/cd
+yaml
+GitHub action se ci/cd kese banaye lambda pe depliy krne ke liye

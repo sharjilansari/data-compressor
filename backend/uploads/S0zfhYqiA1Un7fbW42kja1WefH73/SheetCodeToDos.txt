@@ -1,0 +1,15 @@
+SheetCode ToDos
+2-. based on if cookie available fetch userData and save to localStorage - DONE
+-1. make test case to also take input of size of array from user - DONe
+0. Auto update submission list - DONE
+1. navbar with navigation - DONE
+2. each submission clickable and api call - DONE
+3. profile button
+4. redux state - Done
+5. login/logout feature - DONE
+
+Q. Why clearInteval is used?
+
+Ans: By passing an empty dependency list to useEffect ([]) you are effectively telling React to only run this hook the first time the component renders, not(!) every time the component re-renders.
+
+Now, clearing the interval when the component gets unmounted/destroyed (which is what this code does) is necessary, otherwise the interval would keep running (and throw an error eventually since you cannot update the state of an unmounted component).

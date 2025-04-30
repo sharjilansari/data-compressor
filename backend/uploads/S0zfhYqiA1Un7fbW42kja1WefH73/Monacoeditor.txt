@@ -1,0 +1,26 @@
+Monaco editor
+markdown
+
+#include <bits/stdc++.h>
+using namespace std;
+int main() { // Changed void to int
+    string str;
+    cin >> str;
+    cout << "Hello World " << str;
+    return 0; // Added return statement
+}
+
+
+ https://ce.judge0.com/submissions/c13bf530-7651-47c6-8232-c2a378d352d3?base64_encoded=false&fields=stdout,stderr,status_id,language_id,status
+
+
+{
+    "language_id": 52,
+    "stdout": "hello, Judge0\n",
+    "status_id": 3,
+    "stderr": null,
+    "status": {
+        "id": 3,
+        "description": "Accepted"
+    }
+}

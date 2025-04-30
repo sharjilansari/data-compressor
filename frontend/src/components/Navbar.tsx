@@ -121,6 +121,42 @@ const Navbar: React.FC<NavbarProps> = ({ mode, onToggleColorMode }) => {
                 Compress
               </Button>
               <Button
+                component={RouterLink}
+                to="/stats"
+                sx={{
+                  color: textColor,
+                  borderColor: textColor,
+                  transition: 'all 0.3s ease-in-out',
+                  '&:hover': {
+                    opacity: 0.8,
+                    backgroundColor: 'transparent',
+                    borderColor: textColor,
+                    color: textColor,
+                  },
+                }}
+                variant="outlined"
+              >
+                Stats
+              </Button>
+              <Button
+                component={RouterLink}
+                to="/analytics"
+                sx={{
+                  color: textColor,
+                  borderColor: textColor,
+                  transition: 'all 0.3s ease-in-out',
+                  '&:hover': {
+                    opacity: 0.8,
+                    backgroundColor: 'transparent',
+                    borderColor: textColor,
+                    color: textColor,
+                  },
+                }}
+                variant="outlined"
+              >
+                Analytics
+              </Button>
+              <Button
                 onClick={handleLogout}
                 sx={{
                   color: textColor,
