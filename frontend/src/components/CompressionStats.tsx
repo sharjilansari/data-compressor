@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Paper,
@@ -11,10 +11,11 @@ import {
   TableHead,
   TableRow,
   Container,
-} from '@mui/material';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import SpeedIcon from '@mui/icons-material/Speed';
-import StorageIcon from '@mui/icons-material/Storage';
+} from "@mui/material";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
+import SpeedIcon from "@mui/icons-material/Speed";
+import StorageIcon from "@mui/icons-material/Storage";
+import { useAuth } from "../contexts/AuthContext";
 
 interface CompressionData {
   originalSize: number;
@@ -28,69 +29,142 @@ interface CompressionStatsProps {
   data: CompressionData[];
 }
 
+interface AnalyticsData {
+  _id: string;
+  filename: string;
+  originalSize: number;
+  compressedSize: number;
+  compressionRatio: number;
+  algorithm: string;
+  timestamp: string;
+}
+
 const formatBytes = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ["Bytes", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 const CompressionStats: React.FC<CompressionStatsProps> = ({ data }) => {
   const theme = useTheme();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData[]>([]);
 
-  const calculateAverage = (key: 'originalSize' | 'compressedSize' | 'compressionRatio'): number => {
-    const sum = data.reduce((acc, item) => acc + item[key], 0);
-    return sum / data.length;
+  useEffect(() => {
+    const fetchAnalyticsData = async () => {
+      try {
+        const token = await user?.getIdToken();
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/analytics`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch analytics data");
+        }
+
+        const data = await response.json();
+        setAnalyticsData(data.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchAnalyticsData();
+    }
+  }, [user]);
+
+  const calculateAverages = (data: typeof analyticsData) => {
+    if (!data || data.length === 0)
+      return { averageCompressionRatio: 0, averageSizeReduction: 0 };
+
+    const totalCompressionRatio = data.reduce(
+      (sum, item) => sum + item.compressionRatio,
+      0
+    );
+    const averageCompressionRatio = totalCompressionRatio / data.length;
+
+    const totalReductionPercentage = data.reduce((sum, item) => {
+      const reduction =
+        ((item.originalSize - item.compressedSize) / item.originalSize) * 100;
+      return sum + reduction;
+    }, 0);
+    const averageSizeReduction = totalReductionPercentage / data.length;
+
+    return {
+      averageCompressionRatio,
+      averageSizeReduction,
+    };
   };
 
-  const averageCompressionRatio = calculateAverage('compressionRatio');
-  const averageSizeReduction = (1 - calculateAverage('compressionRatio')) * 100;
+  const { averageCompressionRatio, averageSizeReduction } =
+    calculateAverages(analyticsData);
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: "100%" }}>
       <Container maxWidth="lg">
         <Box sx={{ mt: 4 }}>
           <Paper
             elevation={0}
             sx={{
               p: 4,
-              background: 'transparent',
-              backdropFilter: 'blur(8px)',
-              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : theme.palette.divider}`,
+              background: "transparent",
+              backdropFilter: "blur(8px)",
+              border: `1px solid ${
+                theme.palette.mode === "dark"
+                  ? "rgba(255, 255, 255, 0.2)"
+                  : theme.palette.divider
+              }`,
               borderRadius: 2,
               mb: 4,
             }}
           >
-            <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            <Box sx={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
               <Box
                 sx={{
                   flex: 1,
                   minWidth: 200,
                   p: 3,
                   borderRadius: 2,
-                  background: theme.palette.mode === 'dark'
-                    ? 'rgba(33, 150, 243, 0.1)'
-                    : 'rgba(33, 150, 243, 0.05)',
+                  background:
+                    theme.palette.mode === "dark"
+                      ? "rgba(33, 150, 243, 0.1)"
+                      : "rgba(33, 150, 243, 0.05)",
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}
+                >
                   <TrendingDownIcon color="primary" />
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      color: theme.palette.mode === 'dark' ? 'white' : 'primary.main',
-                      fontWeight: 'bold'
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color:
+                        theme.palette.mode === "dark"
+                          ? "white"
+                          : "primary.main",
+                      fontWeight: "bold",
                     }}
                   >
                     Average Size Reduction
                   </Typography>
                 </Box>
-                <Typography 
-                  variant="h4" 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    color: theme.palette.mode === 'dark' ? 'white' : 'inherit'
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: "bold",
+                    color: theme.palette.mode === "dark" ? "white" : "inherit",
                   }}
                 >
                   {averageSizeReduction.toFixed(1)}%
@@ -103,28 +177,34 @@ const CompressionStats: React.FC<CompressionStatsProps> = ({ data }) => {
                   minWidth: 200,
                   p: 3,
                   borderRadius: 2,
-                  background: theme.palette.mode === 'dark'
-                    ? 'rgba(76, 175, 80, 0.1)'
-                    : 'rgba(76, 175, 80, 0.05)',
+                  background:
+                    theme.palette.mode === "dark"
+                      ? "rgba(76, 175, 80, 0.1)"
+                      : "rgba(76, 175, 80, 0.05)",
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}
+                >
                   <SpeedIcon color="success" />
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      color: theme.palette.mode === 'dark' ? 'white' : 'success.main',
-                      fontWeight: 'bold'
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color:
+                        theme.palette.mode === "dark"
+                          ? "white"
+                          : "success.main",
+                      fontWeight: "bold",
                     }}
                   >
                     Average Compression Ratio
                   </Typography>
                 </Box>
-                <Typography 
-                  variant="h4" 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    color: theme.palette.mode === 'dark' ? 'white' : 'inherit'
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: "bold",
+                    color: theme.palette.mode === "dark" ? "white" : "inherit",
                   }}
                 >
                   {averageCompressionRatio.toFixed(2)}x
@@ -137,28 +217,34 @@ const CompressionStats: React.FC<CompressionStatsProps> = ({ data }) => {
                   minWidth: 200,
                   p: 3,
                   borderRadius: 2,
-                  background: theme.palette.mode === 'dark'
-                    ? 'rgba(156, 39, 176, 0.1)'
-                    : 'rgba(156, 39, 176, 0.05)',
+                  background:
+                    theme.palette.mode === "dark"
+                      ? "rgba(156, 39, 176, 0.1)"
+                      : "rgba(156, 39, 176, 0.05)",
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}
+                >
                   <StorageIcon color="secondary" />
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      color: theme.palette.mode === 'dark' ? 'white' : 'secondary.main',
-                      fontWeight: 'bold'
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color:
+                        theme.palette.mode === "dark"
+                          ? "white"
+                          : "secondary.main",
+                      fontWeight: "bold",
                     }}
                   >
                     Total Files Compressed
                   </Typography>
                 </Box>
-                <Typography 
-                  variant="h4" 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    color: theme.palette.mode === 'dark' ? 'white' : 'inherit'
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: "bold",
+                    color: theme.palette.mode === "dark" ? "white" : "inherit",
                   }}
                 >
                   {data.length}
@@ -170,31 +256,77 @@ const CompressionStats: React.FC<CompressionStatsProps> = ({ data }) => {
           <Paper
             elevation={0}
             sx={{
-              background: 'transparent',
-              backdropFilter: 'blur(8px)',
-              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : theme.palette.divider}`,
+              background: "transparent",
+              backdropFilter: "blur(8px)",
+              border: `1px solid ${
+                theme.palette.mode === "dark"
+                  ? "rgba(255, 255, 255, 0.2)"
+                  : theme.palette.divider
+              }`,
               borderRadius: 2,
-              
             }}
           >
             <TableContainer>
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit', fontWeight: 'bold' }}>File</TableCell>
-                    <TableCell align="right" sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit', fontWeight: 'bold' }}>
+                    <TableCell
+                      sx={{
+                        color:
+                          theme.palette.mode === "dark" ? "white" : "inherit",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      File
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        color:
+                          theme.palette.mode === "dark" ? "white" : "inherit",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Original Size
                     </TableCell>
-                    <TableCell align="right" sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit', fontWeight: 'bold' }}>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        color:
+                          theme.palette.mode === "dark" ? "white" : "inherit",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Compressed Size
                     </TableCell>
-                    <TableCell align="right" sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit', fontWeight: 'bold' }}>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        color:
+                          theme.palette.mode === "dark" ? "white" : "inherit",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Compression Ratio
                     </TableCell>
-                    <TableCell align="right" sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit', fontWeight: 'bold' }}>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        color:
+                          theme.palette.mode === "dark" ? "white" : "inherit",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Algorithm
                     </TableCell>
-                    <TableCell align="right" sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit', fontWeight: 'bold' }}>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        color:
+                          theme.palette.mode === "dark" ? "white" : "inherit",
+                        fontWeight: "bold",
+                      }}
+                    >
                       Time
                     </TableCell>
                   </TableRow>
@@ -204,29 +336,65 @@ const CompressionStats: React.FC<CompressionStatsProps> = ({ data }) => {
                     <TableRow
                       key={index}
                       sx={{
-                        '&:hover': {
-                          background: theme.palette.mode === 'dark'
-                            ? 'rgba(255, 255, 255, 0.05)'
-                            : 'rgba(0, 0, 0, 0.02)',
+                        "&:hover": {
+                          background:
+                            theme.palette.mode === "dark"
+                              ? "rgba(255, 255, 255, 0.05)"
+                              : "rgba(0, 0, 0, 0.02)",
                         },
                       }}
                     >
-                      <TableCell sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit' }}>
+                      <TableCell
+                        sx={{
+                          color:
+                            theme.palette.mode === "dark" ? "white" : "inherit",
+                        }}
+                      >
                         File {index + 1}
                       </TableCell>
-                      <TableCell align="right" sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit' }}>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          color:
+                            theme.palette.mode === "dark" ? "white" : "inherit",
+                        }}
+                      >
                         {formatBytes(item.originalSize)}
                       </TableCell>
-                      <TableCell align="right" sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit' }}>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          color:
+                            theme.palette.mode === "dark" ? "white" : "inherit",
+                        }}
+                      >
                         {formatBytes(item.compressedSize)}
                       </TableCell>
-                      <TableCell align="right" sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit' }}>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          color:
+                            theme.palette.mode === "dark" ? "white" : "inherit",
+                        }}
+                      >
                         {item.compressionRatio.toFixed(2)}x
                       </TableCell>
-                      <TableCell align="right" sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit' }}>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          color:
+                            theme.palette.mode === "dark" ? "white" : "inherit",
+                        }}
+                      >
                         {item.algorithm.toUpperCase()}
                       </TableCell>
-                      <TableCell align="right" sx={{ color: theme.palette.mode === 'dark' ? 'white' : 'inherit' }}>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          color:
+                            theme.palette.mode === "dark" ? "white" : "inherit",
+                        }}
+                      >
                         {new Date(item.timestamp).toLocaleTimeString()}
                       </TableCell>
                     </TableRow>
