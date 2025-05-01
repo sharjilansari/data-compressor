@@ -8,6 +8,7 @@ import { createLogger, format as _format, transports as _transports } from 'wins
 import fileUpload from 'express-fileupload';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import { join } from 'path';
 
 dotenv.config();
 
@@ -102,6 +103,9 @@ app.use(fileUpload({
   safeFileNames: true,
   preserveExtension: true
 }));
+// Serve the files from the 'uploads' directory
+app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+
 
 // Database connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/compression_db';

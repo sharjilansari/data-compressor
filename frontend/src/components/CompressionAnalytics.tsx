@@ -92,7 +92,7 @@ const CompressionAnalytics: React.FC = () => {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 3, color: `${theme.palette.mode === 'dark' ? 'white' : 'black'}` }}>
       <Typography variant="h4" gutterBottom>
         Compression Analytics
       </Typography>
@@ -103,22 +103,23 @@ const CompressionAnalytics: React.FC = () => {
           <Paper
             sx={{
               p: 2,
-              backgroundColor: theme.palette.background.paper,
+              backgroundColor: `${theme.palette.mode === "dark" ? 'rgba(0, 0, 0, 0.9)' : 'background.paper'}`,
               border: `1px solid ${theme.palette.divider}`,
+              color: `${theme.palette.mode === 'dark' ? 'white' : 'black'}`
             }}
           >
             <Typography variant="h6" gutterBottom>
               Summary Statistics
             </Typography>
-            <Grid container spacing={2}>
+            <Grid container spacing={2} sx={{color: `${theme.palette.mode === 'dark' ? 'white' : 'black'}`}}>
               <Grid item xs={12} sm={4}>
-                <Typography variant="subtitle1" color="text.secondary">
+                <Typography variant="subtitle1" color="text.secondary" sx={{color: `${theme.palette.mode === 'dark' ? 'white' : 'black'}`}}>
                   Total Files Compressed
                 </Typography>
                 <Typography variant="h4">{analyticsData.length}</Typography>
               </Grid>
               <Grid item xs={12} sm={4}>
-                <Typography variant="subtitle1" color="text.secondary">
+                <Typography variant="subtitle1" color="text.secondary" sx={{color: `${theme.palette.mode === 'dark' ? 'white' : 'black'}`}}>
                   Average Compression Ratio
                 </Typography>
                 <Typography variant="h4">
@@ -133,7 +134,7 @@ const CompressionAnalytics: React.FC = () => {
                 </Typography>
               </Grid>
               <Grid item xs={12} sm={4}>
-                <Typography variant="subtitle1" color="text.secondary">
+                <Typography variant="subtitle1" color="text.secondary" sx={{color: `${theme.palette.mode === 'dark' ? 'white' : 'black'}`}}>
                   Total Space Saved
                 </Typography>
                 <Typography variant="h4">
@@ -157,8 +158,9 @@ const CompressionAnalytics: React.FC = () => {
             sx={{
               p: 2,
               height: '400px',
-              backgroundColor: theme.palette.background.paper,
+              backgroundColor: `${theme.palette.mode === "dark" ? 'rgba(0, 0, 0, 0.9)' : 'background.paper'}`,
               border: `1px solid ${theme.palette.divider}`,
+              color: `${theme.palette.mode === 'dark' ? 'white' : 'black'}`
             }}
           >
             <Typography variant="h6" gutterBottom>
@@ -194,8 +196,9 @@ const CompressionAnalytics: React.FC = () => {
             sx={{
               p: 2,
               height: '400px',
-              backgroundColor: theme.palette.background.paper,
+              backgroundColor: `${theme.palette.mode === "dark" ? 'rgba(0, 0, 0, 0.9)' : 'background.paper'}`,
               border: `1px solid ${theme.palette.divider}`,
+              color: `${theme.palette.mode === 'dark' ? 'white' : 'black'}`
             }}
           >
             <Typography variant="h6" gutterBottom>

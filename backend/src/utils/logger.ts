@@ -3,45 +3,39 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 
-// Get the directory name using import.meta.url
+// Resolve __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Create logs directory if it doesn't exist
+// Ensure logs directory exists
 const logDir = path.join(__dirname, '../../logs');
 fs.mkdirSync(logDir, { recursive: true });
 
+// Create logger
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
-    winston.format.json()
+    winston.format.json()  // Use JSON format for structured logs
   ),
   transports: [
-    // Write all logs to console
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
         winston.format.simple()
-      )
+      ),
     }),
-    // Write all logs with level 'error' and below to error.log
     new winston.transports.File({
-      filename: path.join(logDir, 'error.log'),
-      level: 'error'
+      filename: path.join(logDir, 'combined.log'),
     }),
-    // Write all logs with level 'info' and below to combined.log
-    new winston.transports.File({
-      filename: path.join(logDir, 'combined.log')
-    })
-  ]
+  ],
 });
 
-// Create a stream object with a 'write' function that will be used by Morgan
-logger.stream = {
-  write: function(message) {
+// Add stream for morgan or similar middlewares
+(logger as any).stream = {
+  write: (message: string): void => {
     logger.info(message.trim());
-  }
+  },
 };
 
-export default logger; 
+export default logger;

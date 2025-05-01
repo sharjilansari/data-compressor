@@ -174,6 +174,7 @@ const CompressionStats: React.FC<CompressionStatsProps> = ({ data }) => {
               backdropFilter: 'blur(8px)',
               border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : theme.palette.divider}`,
               borderRadius: 2,
+              
             }}
           >
             <TableContainer>
